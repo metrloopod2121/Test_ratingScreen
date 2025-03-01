@@ -16,6 +16,9 @@ struct ReviewCellConfig {
     let created: NSAttributedString
     /// Замыкание, вызываемое при нажатии на кнопку "Показать полностью...".
     let onTapShowMore: (UUID) -> Void
+    
+    /// Avatar for user
+    let userAvatar: UIImage
 
     /// Объект, хранящий посчитанные фреймы для ячейки отзыва.
     fileprivate let layout = ReviewCellLayout()
@@ -33,6 +36,7 @@ extension ReviewCellConfig: TableCellConfig {
         cell.reviewTextLabel.attributedText = reviewText
         cell.reviewTextLabel.numberOfLines = maxLines
         cell.createdLabel.attributedText = created
+        cell.avatarImageView.image = userAvatar
         cell.config = self
     }
 
@@ -47,12 +51,15 @@ extension ReviewCellConfig: TableCellConfig {
 // MARK: - Private
 
 private extension ReviewCellConfig {
-
-    /// Текст кнопки "Показать полностью...".
+    /// Текст кнопки "Показать полностью..."
     static let showMoreText = "Показать полностью..."
         .attributed(font: .showMore, color: .showMore)
 
 }
+
+
+
+
 
 // MARK: - Cell
 
@@ -63,6 +70,12 @@ final class ReviewCell: UITableViewCell {
     fileprivate let reviewTextLabel = UILabel()
     fileprivate let createdLabel = UILabel()
     fileprivate let showMoreButton = UIButton()
+    fileprivate let avatarImageView = UIImageView() // надо накидать модификаторов
+//    let imageView = UIImageView()
+//    imageView.contentMode = .scaleAspectFill
+//    imageView.layer.cornerRadius = ReviewCellLayout.avatarCornerRadius
+//    imageView.clipsToBounds = true
+//    return imageView
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -76,6 +89,7 @@ final class ReviewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         guard let layout = config?.layout else { return }
+        avatarImageView.frame = layout.userAvatarFrame
         reviewTextLabel.frame = layout.reviewTextLabelFrame
         createdLabel.frame = layout.createdLabelFrame
         showMoreButton.frame = layout.showMoreButtonFrame
@@ -88,9 +102,17 @@ final class ReviewCell: UITableViewCell {
 private extension ReviewCell {
 
     func setupCell() {
+        setupUserAvatarImageView()
         setupReviewTextLabel()
         setupCreatedLabel()
         setupShowMoreButton()
+    }
+    
+    func setupUserAvatarImageView() {
+        contentView.addSubview(avatarImageView)
+        avatarImageView.contentMode = .scaleAspectFill
+        avatarImageView.layer.cornerRadius = ReviewCellLayout.avatarCornerRadius
+        avatarImageView.clipsToBounds = true
     }
 
     func setupReviewTextLabel() {
@@ -130,6 +152,7 @@ private final class ReviewCellLayout {
     private(set) var reviewTextLabelFrame = CGRect.zero
     private(set) var showMoreButtonFrame = CGRect.zero
     private(set) var createdLabelFrame = CGRect.zero
+    private(set) var userAvatarFrame = CGRect.zero
 
     // MARK: - Отступы
 
@@ -137,7 +160,7 @@ private final class ReviewCellLayout {
     private let insets = UIEdgeInsets(top: 9.0, left: 12.0, bottom: 9.0, right: 12.0)
 
     /// Горизонтальный отступ от аватара до имени пользователя.
-    private let avatarToUsernameSpacing = 10.0
+    private let avatarToUsernameSpacing = 50.0
     /// Вертикальный отступ от имени пользователя до вью рейтинга.
     private let usernameToRatingSpacing = 6.0
     /// Вертикальный отступ от вью рейтинга до текста (если нет фото).
@@ -171,15 +194,22 @@ private final class ReviewCellLayout {
             showShowMoreButton = config.maxLines != .zero && actualTextHeight > currentTextHeight
 
             reviewTextLabelFrame = CGRect(
-                origin: CGPoint(x: insets.left, y: maxY),
+                origin: CGPoint(x: insets.left + avatarToUsernameSpacing, y: maxY),
                 size: config.reviewText.boundingRect(width: width, height: currentTextHeight).size
             )
             maxY = reviewTextLabelFrame.maxY + reviewTextToCreatedSpacing
         }
+        
+        let avatarX = insets.left
+        let avatarY = insets.top
+        userAvatarFrame = CGRect(
+            origin: CGPoint(x: avatarX, y: avatarY),
+            size: Self.avatarSize
+        )
 
         if showShowMoreButton {
             showMoreButtonFrame = CGRect(
-                origin: CGPoint(x: insets.left, y: maxY),
+                origin: CGPoint(x: insets.left + avatarToUsernameSpacing, y: maxY),
                 size: Self.showMoreButtonSize
             )
             maxY = showMoreButtonFrame.maxY + showMoreToCreatedSpacing
@@ -188,7 +218,7 @@ private final class ReviewCellLayout {
         }
 
         createdLabelFrame = CGRect(
-            origin: CGPoint(x: insets.left, y: maxY),
+            origin: CGPoint(x: insets.left + avatarToUsernameSpacing, y: maxY),
             size: config.created.boundingRect(width: width).size
         )
 

@@ -84,7 +84,8 @@ private extension ReviewsViewModel {
         let item = ReviewItem(
             reviewText: reviewText,
             created: created,
-            onTapShowMore: showMoreReview
+            onTapShowMore: showMoreReview,
+            userAvatar: UIImage(named: "userAvatar")!
         )
         return item
     }
