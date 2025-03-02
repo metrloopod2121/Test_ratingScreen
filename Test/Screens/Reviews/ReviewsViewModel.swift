@@ -1,7 +1,10 @@
+
 import UIKit
 
 /// Класс, описывающий бизнес-логику экрана отзывов.
 final class ReviewsViewModel: NSObject {
+    
+    private var isLoading = false
 
     /// Замыкание, вызываемое при изменении `state`.
     var onStateChange: ((State) -> Void)?
@@ -22,6 +25,10 @@ final class ReviewsViewModel: NSObject {
         self.ratingRenderer = ratingRenderer
         self.decoder = decoder
     }
+    
+    deinit {
+        print("Reviews View Model deinit")
+    }
 
 }
 
@@ -32,12 +39,25 @@ extension ReviewsViewModel {
     typealias State = ReviewsViewModelState
 
     /// Метод получения отзывов.
-    func getReviews() {
-        guard state.shouldLoad else { return }
-        state.shouldLoad = false
-        reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
-    }
+//    func getReviews() {
+//        print("Get Reviews")
+//        guard state.shouldLoad else { return }
+//        state.shouldLoad = false
+//        reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
+//    }
 
+    func getReviews() {
+        print("Get Reviews")
+        guard state.shouldLoad && !isLoading else { return }
+        isLoading = true
+        state.shouldLoad = false
+        reviewsProvider.getReviews(offset: state.offset) { [weak self] result in
+            guard let self = self else { return }
+            self.isLoading = false
+            self.gotReviews(result)
+        }
+    }
+    
 }
 
 // MARK: - Private
@@ -45,17 +65,41 @@ extension ReviewsViewModel {
 private extension ReviewsViewModel {
 
     /// Метод обработки получения отзывов.
+//    func gotReviews(_ result: ReviewsProvider.GetReviewsResult) {
+//        do {
+//            let data = try result.get()
+//            let reviews = try decoder.decode(Reviews.self, from: data)
+//            state.items += reviews.items.map(makeReviewItem)
+//            state.offset += state.limit
+//            state.shouldLoad = state.offset < reviews.count
+//        } catch {
+//            state.shouldLoad = true
+//        }
+//        onStateChange?(state)
+//    }
+    
+    
     func gotReviews(_ result: ReviewsProvider.GetReviewsResult) {
-        do {
-            let data = try result.get()
-            let reviews = try decoder.decode(Reviews.self, from: data)
-            state.items += reviews.items.map(makeReviewItem)
-            state.offset += state.limit
-            state.shouldLoad = state.offset < reviews.count
-        } catch {
-            state.shouldLoad = true
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            do {
+                let data = try result.get()
+                let reviews = try self.decoder.decode(Reviews.self, from: data)
+                let reviewItems = reviews.items.map(self.makeReviewItem)
+                
+                DispatchQueue.main.async {
+                    self.state.items += reviewItems
+                    self.state.offset += self.state.limit
+                    self.state.shouldLoad = self.state.offset < reviews.count
+                    self.onStateChange?(self.state)
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.state.shouldLoad = true
+                    self.onStateChange?(self.state)
+                }
+            }
         }
-        onStateChange?(state)
     }
 
     /// Метод, вызываемый при нажатии на кнопку "Показать полностью...".
@@ -79,19 +123,29 @@ private extension ReviewsViewModel {
     typealias ReviewItem = ReviewCellConfig
 
     func makeReviewItem(_ review: Review) -> ReviewItem {
+        let ratingImage = ratingRenderer.ratingImage(review.rating)
         let reviewText = review.text.attributed(font: .text)
         let created = review.created.attributed(font: .created, color: .created)
+        let userAvatar = UIImage(named: "userAvatar")!
+        let firstName = review.first_name ?? ""
+        let lastName = review.last_name ?? ""
+        
         let item = ReviewItem(
             reviewText: reviewText,
             created: created,
-            onTapShowMore: showMoreReview,
-            userAvatarImage: UIImage(named: "userAvatar")!,
-            firstName: review.first_name ?? "",
-            lastName: review.last_name ?? "",
-            userRatingImage: ratingRenderer.ratingImage(review.rating)
+            onTapShowMore: { [weak self] id in
+                self?.showMoreReview(with: id)
+            },
+            userAvatarImage: userAvatar,
+            firstName: firstName,
+            lastName: lastName,
+            userRatingImage: ratingImage
         )
+        
         return item
     }
+    
+    
 
 }
 
