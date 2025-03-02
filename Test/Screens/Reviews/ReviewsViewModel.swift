@@ -85,7 +85,10 @@ private extension ReviewsViewModel {
             reviewText: reviewText,
             created: created,
             onTapShowMore: showMoreReview,
-            userAvatar: UIImage(named: "userAvatar")!
+            userAvatarImage: UIImage(named: "userAvatar")!,
+            firstName: review.first_name ?? "",
+            lastName: review.last_name ?? "",
+            userRatingImage: ratingRenderer.ratingImage(review.rating)
         )
         return item
     }
@@ -97,10 +100,17 @@ private extension ReviewsViewModel {
 extension ReviewsViewModel: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        state.items.count
+        state.items.count + 1 // +1 для ячейки с количеством отзывов
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if indexPath.row == state.items.count {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ReviewCountCell", for: indexPath)
+            cell.textLabel?.text = "Всего отзывов: \(state.items.count)"
+            cell.textLabel?.textAlignment = .center
+            return cell
+        }
+
         let config = state.items[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: config.reuseId, for: indexPath)
         config.update(cell: cell)
@@ -114,7 +124,10 @@ extension ReviewsViewModel: UITableViewDataSource {
 extension ReviewsViewModel: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        state.items[indexPath.row].height(with: tableView.bounds.size)
+        if indexPath.row == state.items.count {
+            return 44 // Фиксированная высота для ячейки с количеством отзывов
+        }
+        return state.items[indexPath.row].height(with: tableView.bounds.size)
     }
 
     /// Метод дозапрашивает отзывы, если до конца списка отзывов осталось два с половиной экрана по высоте.
