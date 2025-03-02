@@ -11,21 +11,7 @@ Memory Leaks:
 
 Solution:
 
-В методе MakeReviewItem() вместо передачи замыкания showMoreReview напрямую, используем  [weak self]:
-
-
-// ReviewsViewModel.swift
-
-func makeReviewItem(_ review: Review) -> ReviewItem {
-     ...
-      let item = ReviewItem(
-          reviewText: reviewText,
-          created: created,
-          onTapShowMore: {[weak self] id in
-              self?.showMoreReview(with: id)
-          },
-      ...
-  }
+В методе MakeReviewItem() вместо передачи замыкания showMoreReview напрямую, использовал  [weak self]
   
 
 - Для многопоточности использовал GCD 
