@@ -48,10 +48,6 @@ final class RatingRenderer {
         self.images = images
         self.imageRenderer = imageRenderer
     }
-    
-    deinit {
-        print("RatingRenderer deinit")
-    }
 
 }
 

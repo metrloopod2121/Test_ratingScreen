@@ -7,10 +7,6 @@ final class RootViewController: UIViewController {
     override func loadView() {
         view = rootView
     }
-    
-    deinit {
-        print("RootViewController is deinited")
-    }
 
 }
 

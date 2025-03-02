@@ -25,10 +25,6 @@ final class ReviewsViewModel: NSObject {
         self.ratingRenderer = ratingRenderer
         self.decoder = decoder
     }
-    
-    deinit {
-        print("Reviews View Model deinit")
-    }
 
 }
 
@@ -38,16 +34,7 @@ extension ReviewsViewModel {
 
     typealias State = ReviewsViewModelState
 
-    /// Метод получения отзывов.
-//    func getReviews() {
-//        print("Get Reviews")
-//        guard state.shouldLoad else { return }
-//        state.shouldLoad = false
-//        reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
-//    }
-
     func getReviews() {
-        print("Get Reviews")
         guard state.shouldLoad && !isLoading else { return }
         isLoading = true
         state.shouldLoad = false
@@ -64,21 +51,6 @@ extension ReviewsViewModel {
 
 private extension ReviewsViewModel {
 
-    /// Метод обработки получения отзывов.
-//    func gotReviews(_ result: ReviewsProvider.GetReviewsResult) {
-//        do {
-//            let data = try result.get()
-//            let reviews = try decoder.decode(Reviews.self, from: data)
-//            state.items += reviews.items.map(makeReviewItem)
-//            state.offset += state.limit
-//            state.shouldLoad = state.offset < reviews.count
-//        } catch {
-//            state.shouldLoad = true
-//        }
-//        onStateChange?(state)
-//    }
-    
-    
     func gotReviews(_ result: ReviewsProvider.GetReviewsResult) {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -127,6 +99,7 @@ private extension ReviewsViewModel {
         let reviewText = review.text.attributed(font: .text)
         let created = review.created.attributed(font: .created, color: .created)
         let userAvatar = UIImage(named: "userAvatar")!
+        // let userAvatarURL = review.avatarURL
         let firstName = review.first_name ?? ""
         let lastName = review.last_name ?? ""
         
@@ -144,9 +117,6 @@ private extension ReviewsViewModel {
         
         return item
     }
-    
-    
-
 }
 
 // MARK: - UITableViewDataSource

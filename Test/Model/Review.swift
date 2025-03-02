@@ -11,5 +11,9 @@ struct Review: Decodable {
     let text: String
     /// Время создания отзыва.
     let created: String
+    /// Avatar URL
+    let avatarURL: String?
+    /// Phoro URLs
+    // let photoURLs: [String]
 
 }
