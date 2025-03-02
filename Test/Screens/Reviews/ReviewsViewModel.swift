@@ -106,7 +106,8 @@ extension ReviewsViewModel: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.row == state.items.count {
             let cell = tableView.dequeueReusableCell(withIdentifier: "ReviewCountCell", for: indexPath)
-            cell.textLabel?.text = "Всего отзывов: \(state.items.count)"
+            cell.textLabel?.text = "\(state.items.count) отзывов"
+            cell.textLabel?.textColor = .gray
             cell.textLabel?.textAlignment = .center
             return cell
         }
@@ -125,7 +126,7 @@ extension ReviewsViewModel: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if indexPath.row == state.items.count {
-            return 44 // Фиксированная высота для ячейки с количеством отзывов
+            return 44
         }
         return state.items[indexPath.row].height(with: tableView.bounds.size)
     }

@@ -208,15 +208,14 @@ private final class ReviewCellLayout {
         var maxY = insets.top
         var showShowMoreButton = false
         
-        // Avatar Image
+        /// Avatar Image layout
         let avatarX = insets.left
-//        let avatarY = insets.top
         userAvatarFrame = CGRect(
             origin: CGPoint(x: avatarX, y: maxY),
             size: Self.avatarSize
         )
         
-        // Username Label
+        /// Username Label layout
         let userNameSize = "\(config.firstName) \(config.lastName)".boundingRect(
             with: CGSize(width: width, height: .greatestFiniteMagnitude),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
@@ -231,7 +230,7 @@ private final class ReviewCellLayout {
         
         maxY = userNameLabelFrame.maxY + usernameToRatingSpacing
         
-        // user rating
+        /// User rating layout
         let userRatingImageX = insets.left + userAvatarFrame.width + avatarToUsernameSpacing
         userRatingImageFrame = CGRect(
             origin: CGPoint(x: userRatingImageX, y: maxY),
@@ -240,7 +239,7 @@ private final class ReviewCellLayout {
         
         maxY = userRatingImageFrame.maxY + ratingToTextSpacing
 
-        // Review Text
+        /// Review Text layout
         if !config.reviewText.isEmpty() {
             // Высота текста с текущим ограничением по количеству строк.
             let currentTextHeight = (config.reviewText.font()?.lineHeight ?? .zero) * CGFloat(config.maxLines)
@@ -267,6 +266,7 @@ private final class ReviewCellLayout {
             showMoreButtonFrame = .zero
         }
 
+        /// Create Label layout
         createdLabelFrame = CGRect(
             origin: CGPoint(x: insets.left + userAvatarFrame.width + avatarToUsernameSpacing, y: maxY),
             size: config.created.boundingRect(width: width).size
